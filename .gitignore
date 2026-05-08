@@ -10,6 +10,9 @@ logs/
 *.log
 npm-debug.log*
 
+# Database
+database.db
+
 # Runtime
 pids/
 *.pid
@@ -21,3 +24,5 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# 

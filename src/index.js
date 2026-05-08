@@ -7,6 +7,7 @@ const {
     ChannelType
 } = require('discord.js');
 require('dotenv').config();
+const db = require('./database');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -76,7 +77,5 @@ bot.on(Events.InteractionCreate, async (interaction) => {
         }
     }
 });
-
-
 
 bot.login(process.env.TOKEN);
