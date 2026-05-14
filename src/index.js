@@ -1,36 +1,23 @@
 const {
     Client,
     Collection,
-    Events,
     GatewayIntentBits,
-    MessageFlags,
-    ChannelType
 } = require('discord.js');
 require('dotenv').config();
 const db = require('./database');
 const fs = require('node:fs');
 const path = require('node:path');
-
 const bot = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.GuildVoiceStates,
-        GatewayIntentBits.MessageContent
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
     ]
 });
 
 bot.commands = new Collection();
-
-bot.once(Events.ClientReady, () => {
-    const channels = bot.channels.cache.filter(channel => channel.type !== ChannelType.GuildCategory);
-    console.log(`${bot.user.tag} est connecté ! ✅ ❤️`);
-    console.log(`Uptime : ${bot.uptime}ms | ${Math.floor(bot.uptime / 1000)} secondes.\nChannels : ${channels.size}`);
-
-    bot.channels.cache.forEach(channel => {
-        console.log(`- ${channel.name} - ${channel.type}`)
-    })
-});
 
 const folderPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(folderPath);
@@ -49,33 +36,17 @@ for (const folder of commandFolders) {
     }
 }
 
-// 
-bot.on(Events.InteractionCreate, async (interaction) => {
-    if (!interaction.isChatInputCommand()) return;
-    console.log(interaction);
-    const command = interaction.client.commands.get(interaction.commandName);
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync(eventsPath).filter((file) => file.endsWith('.js'));
 
-    if (!command) {
-        console.error(`Aucune commande correspondant à ${interaction.commandName}, n'a était trouvé`);
-        return;
+for (const file of eventFiles) {
+    const filePath = path.join(eventsPath, file);
+    const event = require(filePath);
+    if (event.once) {
+        bot.once(event.name, (...args) => event.execute(...args));
+    } else {
+        bot.on(event.name, (...args) => event.execute (...args));
     }
-
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(error);
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({
-                content: "Il y a eu une erreur lors de l'exécution de cette commande !",
-                flags: MessageFlags.Ephemeral,
-            });
-        } else {
-            await interaction.reply({
-                content: "Il y a eu une erreur lors de l'exécution de cette commande !",
-                flags: MessageFlags.Ephemeral,
-            })
-        }
-    }
-});
+}
 
 bot.login(process.env.TOKEN);

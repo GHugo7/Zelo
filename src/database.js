@@ -8,7 +8,8 @@ db.exec(`
     CREATE TABLE IF NOT EXISTS guilds (
     id TEXT PRIMARY KEY,
     color INTEGER DEFAULT f50cda,
-    prefix TEXT DEFAULT '-'
+    prefix TEXT DEFAULT '-',
+    channel_logs TEXT
     )
 `);
 
