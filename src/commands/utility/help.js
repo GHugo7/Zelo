@@ -8,12 +8,17 @@ module.exports = {
     async execute(interaction) {  
         const color = getColor(interaction.guild.id);
         const embed = new EmbedBuilder()
+            .setAuthor({
+                name: interaction.user.globalName,
+                iconURL: interaction.user.displayAvatarURL(),
+            })
             .setTitle('📋 Commandes disponibles')
             .setColor(color)
             .setFields(
                 { name: '/ping', value: 'Vérifier le bon fonctionnement du bot'},
                 { name: '/help', value: 'Donne la liste des commandes'},
                 { name: '/color', value: 'Permet de personnaliser la couleur du bot'},
+                { name: "/config", value: 'Permet la configuration du bot'}
             )
             .setTimestamp()
 

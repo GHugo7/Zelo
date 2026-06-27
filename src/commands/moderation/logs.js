@@ -24,8 +24,22 @@ module.exports = {
         const guildDB = db.prepare(`SELECT channel_logs FROM guilds WHERE id = ?`).get(guildId);
 
         if (guildDB && guildDB.channel_logs === channel.id) {
+            const embed = new EmbedBuilder()
+                .setAuthor({
+                    name: interaction.user.globalName,
+                    iconURL: interaction.user.displayAvatarURL(),
+                })
+                .setColor(getColor(guildId))
+                .setTitle("⚙️ Configuration - logs")
+                .addFields(
+                    { name: "Salon", value: `${channel}`, inline: true },
+                    { name: "Action", value: `Aucune`, inline: true },
+                    { name: "Ancien salon", value: `${channel}`, inline: true },
+                )
+                .setTimestamp()
+
             return await interaction.reply({
-                content: `Le channel de logs est déjà défini sur ce même salon`,
+                embeds: [embed],
             })
         }
 
@@ -38,17 +52,13 @@ module.exports = {
             .setColor(getColor(guildId))
             // HEADER
             .setAuthor({
-                name: interaction.user.username,
+                name: interaction.user.globalName,
                 iconURL: interaction.user.displayAvatarURL(),
             })
             .setTitle("⚙️ Configuration - logs")
             // Corps
             .addFields(
-                {
-                    name: "Salon",
-                    value: `${channel}`,
-                    inline: true
-                },
+                { name: "Salon", value: `${channel}`, inline: true },
                 { name: "Action", value: `${guildDB?.channel_logs ? "Modifié" : "Défini"}`, inline: true },
                 { name: "Ancien salon", value: `${guildDB?.channel_logs ? `<#${guildDB.channel_logs}>` : '-'}`, inline: true },
             )
