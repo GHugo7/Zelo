@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { useMainPlayer } = require('discord-player');
-const { name } = require('../../database');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -24,19 +23,26 @@ module.exports = {
         }
 
         const query = interaction.options.getString('query', true);
-
-        await interaction.deferReply();
+        
+        try {
+            await interaction.deferReply();
+        } catch {
+            return;
+        }
 
         try {
             const { track } = await player.play(channel, query, {
                 nodeOptions: {
-                    metadata: {
-                        channel: interaction.channel,
-                    },
+                    metadata: interaction.channel,
+                    leaveOnEmpty: true,
+                    leaveOnEmptyCooldown: 60000,
+                    leaveOnEnd: true,
+                    leaveOnEndCooldown: 10000, 
                 },
+                requestedBy: interaction.user,
             });
 
-            return interaction.followUp(`🎵 **${track.title}** ajouté à la queue !`);
+            return interaction.deleteReply();
         } catch (e) {
             interaction.followUp(`❌ Aucun résultat trouvé pour **${query}** !`);
         }
@@ -45,19 +51,25 @@ module.exports = {
     async autocomplete(interaction) {
         const player = useMainPlayer();
         const query = interaction.options.getString('query', true);
-
-        if (!query) return interaction.respond([]);
-
+        if (!query || query.length < 2) {
+            try { await interaction.respond([]); } catch {}
+            return;
+        }
         try {
-            const results = await player.search(query);
-            return interaction.respond(
-                results.tracks.slice(0, 10).map(t => ({
-                    name: t.title.slice(0, 100),
-                    value: t.url.slice(0, 100),
-                }))
-            );
+            const results = await Promise.race([
+                player.search(query),
+                new Promise((_, reject) => setTimeout(() => reject(), 1500))
+            ]);
+            try {
+                await interaction.respond(
+                    results.tracks.slice(0, 10).map(t => ({
+                        name: t.title.slice(0, 100),
+                        value: t.url.slice(0, 100),
+                    }))
+                );
+            } catch {}
         } catch {
-            return interaction.respond([])
+            try { await interaction.respond([]); } catch {}
         }
     },
 };
