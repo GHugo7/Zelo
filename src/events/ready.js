@@ -18,6 +18,7 @@ module.exports = {
         })
 
         await createPlayer(bot);
+        require('../playerEvents')
         const statuts = [
             { name: 'la Community Lu\'', type: ActivityType.Watching },
             { name: '/help pour commencer', type: ActivityType.Playing },
@@ -33,6 +34,6 @@ module.exports = {
         setInterval(() => {
             i = (i + 1) % statuts.length;
             bot.user.setActivity(statuts[i]);
-        }, 20000);
+        }, 10000);
     }
 }

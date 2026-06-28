@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { useMainPlayer } = require('discord-player');
+const { name } = require('../../database');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -8,6 +9,7 @@ module.exports = {
         .addStringOption(option => option
             .setName('query')
             .setDescription('Nom ou URL de la musique')
+            .setAutocomplete(true)
             .setRequired(true)
         ),
     async execute(interaction) {
@@ -38,5 +40,24 @@ module.exports = {
         } catch (e) {
             interaction.followUp(`❌ Aucun résultat trouvé pour **${query}** !`);
         }
-    }
+    },
+
+    async autocomplete(interaction) {
+        const player = useMainPlayer();
+        const query = interaction.options.getString('query', true);
+
+        if (!query) return interaction.respond([]);
+
+        try {
+            const results = await player.search(query);
+            return interaction.respond(
+                results.tracks.slice(0, 10).map(t => ({
+                    name: t.title.slice(0, 100),
+                    value: t.url.slice(0, 100),
+                }))
+            );
+        } catch {
+            return interaction.respond([])
+        }
+    },
 };
