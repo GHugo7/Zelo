@@ -48,7 +48,11 @@ module.exports = {
                 }
                 break;
             case 'music_prev_page':
+                queue.metadata.currentPage = Math.max(0, (queue.metadata.currentPage || 0) - 1);
+                await interaction.deferUpdate();
+                break;
             case 'music_next_page':
+                queue.metadata.currentPage = (queue.metadata.currentPage || 0) + 1;
                 await interaction.deferUpdate();
                 break;
         }

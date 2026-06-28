@@ -15,10 +15,11 @@ module.exports = {
             .setTitle('📋 Commandes disponibles')
             .setColor(color)
             .setFields(
-                { name: '/ping', value: 'Vérifier le bon fonctionnement du bot'},
-                { name: '/help', value: 'Donne la liste des commandes'},
-                { name: '/color', value: 'Permet de personnaliser la couleur du bot'},
-                { name: "/config", value: 'Permet la configuration du bot'}
+                { name: '/ping', value: 'Vérifier le bon fonctionnement du bot.'},
+                { name: '/help', value: 'Donne la liste des commandes.'},
+                { name: '/color', value: 'Permet de personnaliser la couleur du bot.'},
+                { name: '/config', value: 'Permet la configuration du bot.'},
+                { name: '/play', value: 'Ecouter de la musique.'},
             )
             .setTimestamp()
 

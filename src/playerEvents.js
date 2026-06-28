@@ -6,10 +6,11 @@ const player = getPlayer();
 
 player.events.on('playerStart', async (queue, track) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
-    const result = buildMusicEmbed(queue);
+    const page = queue.metadata.currentPage || 0;
+    const result = buildMusicEmbed(queue, page);
     if (!result) return;
     const { embed, totalPages } = result;
-    const buttons = buildMusicButtons(0, totalPages, false);
+    const buttons = buildMusicButtons(page, totalPages, false);
 
     if (queue.metadata.playerMessage) {
         // Message deja existant - edit
@@ -36,10 +37,11 @@ player.events.on('playerStart', async (queue, track) => {
             clearInterval(interval);
             return;
         }
-        const result = buildMusicEmbed(queue);
+        const page = queue.metadata.currentPage || 0;
+        const result = buildMusicEmbed(queue, page);
         if (!result) return;
         const { embed: updatedEmbed, totalPages: updatedPages } = result;
-        const updatedButtons = buildMusicButtons(0, updatedPages, queue.node.isPaused());
+        const updatedButtons = buildMusicButtons(page, updatedPages, queue.node.isPaused());
         await queue.metadata.playerMessage.edit({
             embeds: [updatedEmbed],
             components: updatedButtons,
