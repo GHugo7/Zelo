@@ -6,7 +6,7 @@ module.exports = {
     once: false,
     
     async execute(interaction) {
-        if (!interaction.isButton()) return;
+        if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
         const queue = useQueue(interaction.guild.id);
 
@@ -55,6 +55,11 @@ module.exports = {
                 queue.metadata.currentPage = (queue.metadata.currentPage || 0) + 1;
                 await interaction.deferUpdate();
                 break;
+            case 'music_loop':
+                const mode = parseInt(interaction.values[0]);
+                queue.setRepeatMode(mode);
+                await interaction.deferUpdate();
+                break; 
         }
     }
 }
