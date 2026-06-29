@@ -1,16 +1,13 @@
 const { EmbedBuilder } = require('discord.js');
 const getColor = require('./getColor');
 
-module.exports = function buildMusicEmbed(queue, page = 0, trackInfo = null) {
+module.exports = function buildMusicEmbed(queue, page = 0) {
     const currentTrack = queue.currentTrack;
     if (!currentTrack) return null;
     const tracks = queue.tracks.toArray();
     const tracksPerPage = 10;
     const totalPages = Math.ceil(tracks.length / tracksPerPage) || 1;
     const pageTracks = tracks.slice(page * tracksPerPage, (page + 1) * tracksPerPage);
-
-    const artist = trackInfo?.artist || currentTrack.author;
-    const title = trackInfo?.title || currentTrack.title;
 
     // Barre de progression
     const duration = currentTrack.durationMS;
@@ -28,8 +25,8 @@ module.exports = function buildMusicEmbed(queue, page = 0, trackInfo = null) {
         .setTitle('🎵 Lu` Music Player')
         .setThumbnail(currentTrack.thumbnail || null)
         .addFields(
-            { name: '🎶 En cours', value: `**${title}**`, inline: false },
-            { name: '👤 Artiste', value: artist, inline: true },
+            { name: '🎶 En cours', value: `**${currentTrack.title}**`, inline: false },
+            { name: '👤 Artiste', value: currentTrack.author, inline: true },
             { name: '⏱️ Durée', value: position?.current?.label && position?.total?.label ? `${position.current.label} / ${position.total.label}` : '0:00 / 0:00', inline: true },
             { name: '➕ Ajouté par', value: `${currentTrack.requestedBy}`, inline: true },
             { name: `▶️ ${bar}`, value: '\u200b', inline: false },

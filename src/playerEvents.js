@@ -1,23 +1,13 @@
 const { getPlayer } = require('./player');
 const buildMusicEmbed = require('./utils/musicEmbed');
 const buildMusicButtons = require('./utils/musicButtons');
-const getTrackInfo = require('./utils/getTrackInfo');
 
 const player = getPlayer();
 
 player.events.on('playerStart', async (queue, track) => {
-    const parts = track.title.split(/\s*[-–]\s*/);
-    const searchTitle = (parts.length > 1 ? parts[parts.length - 1] : parts[0])
-        .replace(/\(.*?\)/g, '')
-        .replace(/\[.*?\]/g, '')
-        .trim();
-    const searchArtist = parts.length > 1 ? parts[0] : track.author;
-    const trackInfo = await getTrackInfo(searchTitle, searchArtist);
-    queue.metadata.trackInfo = trackInfo;
-
     await new Promise(resolve => setTimeout(resolve, 1000));
     const page = queue.metadata.currentPage || 0;
-    const result = buildMusicEmbed(queue, page, queue.metadata.trackInfo);
+    const result = buildMusicEmbed(queue, page);
     if (!result) return;
     const { embed, totalPages } = result;
     const buttons = buildMusicButtons(page, totalPages, false, queue.repeatMode);
@@ -48,7 +38,7 @@ player.events.on('playerStart', async (queue, track) => {
             return;
         }
         const page = queue.metadata.currentPage || 0;
-        const result = buildMusicEmbed(queue, page, queue.metadata.trackInfo);
+        const result = buildMusicEmbed(queue, page);
         if (!result) return;
         const { embed: updatedEmbed, totalPages: updatedPages } = result;
         const updatedButtons = buildMusicButtons(page, updatedPages, queue.node.isPaused(), queue.repeatMode);
