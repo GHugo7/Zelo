@@ -33,7 +33,7 @@ module.exports = {
         try {
             const { track } = await player.play(channel, query, {
                 nodeOptions: {
-                    metadata: interaction.channel,
+                    metadata: { channel: interaction.channel, playlistName: null },
                     leaveOnEmpty: true,
                     leaveOnEmptyCooldown: 60000,
                     leaveOnEnd: true,

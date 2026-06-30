@@ -20,6 +20,10 @@ module.exports = function buildMusicEmbed(queue, page = 0) {
         ? pageTracks.map((t, i) => `${page * tracksPerPage + i + 1}. **${t.title}** - **${t.author}**`).join('\n')
         : 'Aucune musique dans la queue';
 
+    const playlistField = queue.metadata.playlistName
+        ? [{ name: '📀 Playlist', value: queue.metadata.playlistName, inline: false }]
+        : [];
+
     const embed = new EmbedBuilder()
         .setColor(getColor(queue.guild.id))
         .setTitle('🎵 Lu` Music Player')
@@ -29,6 +33,7 @@ module.exports = function buildMusicEmbed(queue, page = 0) {
             { name: '👤 Artiste', value: currentTrack.author, inline: true },
             { name: '⏱️ Durée', value: position?.current?.label && position?.total?.label ? `${position.current.label} / ${position.total.label}` : '0:00 / 0:00', inline: true },
             { name: '➕ Ajouté par', value: `${currentTrack.requestedBy}`, inline: true },
+            ...playlistField,
             { name: `▶️ ${bar}`, value: '\u200b', inline: false },
             { name: `📋 File d'attente — page ${page + 1}/${totalPages}`, value: queueList, inline: false },
         )

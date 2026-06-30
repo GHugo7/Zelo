@@ -20,7 +20,7 @@ player.events.on('playerStart', async (queue, track) => {
         }).catch(() => {});
     } else {
         // Initialisation - creation du message
-        const message = await queue.metadata.send({
+        const message = await queue.metadata.channel.send({
             embeds: [embed],
             components: buttons,
         });
@@ -76,10 +76,10 @@ player.events.on('emptyQueue', (queue) => {
 
 player.events.on('error', (queue, error) => {
     console.error(`Erreur player :`, error);
-    queue.metadata.send(`❌ Erreur : ${error.message}`);
+    queue.metadata.channel.send(`❌ Erreur : ${error.message}`);
 });
 
 player.events.on('playerError', (queue, error) => {
     console.error(`Erreur playerError :`, error);
-    queue.metadata.send(`❌ Erreur de lecture : ${error.message}`);
+    queue.metadata.channel.send(`❌ Erreur de lecture : ${error.message}`);
 });

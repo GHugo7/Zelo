@@ -12,4 +12,24 @@ db.exec(`
     )
 `);
 
+db.exec(`
+    CREATE TABLE IF NOT EXISTS playlists (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        guild_id TEXT,
+        user_id TEXT,
+        name TEXT,
+        UNIQUE(guild_id, user_id, name)
+    )
+`);
+
+db.exec(`
+    CREATE TABLE IF NOT EXISTS playlist_tracks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        playlist_id INTEGER,
+        title TEXT,
+        url TEXT,
+        FOREIGN KEY(playlist_id) REFERENCES playlists(id) ON DELETE CASCADE
+    )
+`);
+
 module.exports = db;
