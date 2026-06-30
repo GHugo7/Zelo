@@ -1,18 +1,11 @@
 const {
     SlashCommandBuilder,
-    MessageFlags
+    EmbedBuilder,
+    MessageFlags,
 } = require('discord.js');
-const db = require('../../database');
+const db = require('../database');
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('color')
-        .setDescription('Change la couleur du bot')
-        .addStringOption(option => option 
-            .setName('couleur')
-            .setDescription('Couleur en hexadécimal (ex: #f50cda)')
-            .setRequired(true)
-        ),
     async execute(interaction) {
         const input = interaction.options.getString('couleur');
         const hex = input.replace('#', '');
@@ -27,14 +20,22 @@ module.exports = {
         const color = parseInt(hex, 16);
         const guildId = interaction.guild.id;
 
+        const embed = new EmbedBuilder()
+            .setTitle('⚙️ Configuration — Couleur')
+            .setColor(color)
+            .addFields(
+                { name: 'Nouvelle couleur', value: `#${hex.toUpperCase()}`, inline: true }
+            )
+            .setTimestamp()
+
         db.prepare(`
             INSERT INTO guilds (id, color) VALUES (?, ?)
             ON CONFLICT(id) DO UPDATE SET COLOR = ?
         `).run(guildId, color, color);
 
-        interaction.reply({
-            content: '✅ La couleur a été mis à jour !',
-            flags: MessageFlags.Ephemeral,
-        });
+        await interaction.reply({
+            embeds: [embed],
+            flags: MessageFlags.Ephemeral
+        })
     }
 };

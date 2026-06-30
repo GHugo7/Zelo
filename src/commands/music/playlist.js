@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const db = require('../../database');
+const embedError = require('../../utils/embedError');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -71,53 +72,64 @@ module.exports = {
 
         if (sub === 'create') {
             const name = interaction.options.getString('nom');
+            const errorEmbed = embedError('📀 Playlist — Creation', `Une playlist **${name}** existe déjà !`);
             try {
                 db.prepare('INSERT INTO playlists (guild_id, user_id, name) VALUES (?, ?, ?)').run(guildId, userId, name);
                 await interaction.reply({ content: `Playlist **${name}** créée !`, flags: MessageFlags.Ephemeral });
             } catch {
-                await interaction.reply({ content: `Une playlist **${name}** existe déjà !`, flags: MessageFlags.Ephemeral });
+                await interaction.reply({ embeds: [errorEmbed], flags: MessageFlags.Ephemeral });
             }
         }
 
         else if (sub === 'add') {
             const name = interaction.options.getString('playlist');
             const query = interaction.options.getString('query');
+            const errorEmbedI = embedError('📀 Playlist — Ajout', `Playlist **${name}** introuvable !`);
+
             const playlist = db.prepare('SELECT id FROM playlists WHERE guild_id = ? AND user_id = ? AND name = ?').get(guildId, userId, name);
-            if (!playlist) return interaction.reply({ content: `Playlist **${name}** introuvable !`, flags: MessageFlags.Ephemeral });
+            if (!playlist) return interaction.reply({ embeds: [errorEmbedI], flags: MessageFlags.Ephemeral });
 
             const { useMainPlayer } = require('discord-player');
             const player = useMainPlayer();
             const result = await player.search(query, { requestedBy: interaction.user });
 
-            if (!result.hasTracks()) return interaction.reply({ content: `Aucun résultat pour **${query}** !`, flags: MessageFlags.Ephemeral });
+            const errorEmbedQ = embedError('📀 Playlist — Ajout', `Aucun résultat pour **${query}** !`);
+            if (!result.hasTracks()) return interaction.reply({ embeds: [errorEmbedQ], flags: MessageFlags.Ephemeral });
 
             const track = result.tracks[0];
             
+            const errorEmbedE = embedError('📀 Playlist — Ajout', `**${track.title}** est déjà dans la playlist **${name}** !`);
             const existing = db.prepare('SELECT id FROM playlist_tracks WHERE playlist_id = ? AND title = ?').get(playlist.id, track.title);
             if (existing) {
                 return interaction.reply({
-                    content: `**${track.title}** est déjà dans la playlist **${name}** !`,
+                    embeds: [errorEmbedE],
                     flags: MessageFlags.Ephemeral
                 })
             }
 
             db.prepare('INSERT INTO playlist_tracks (playlist_id, title, url) VALUES (?, ?, ?)').run(playlist.id, track.title, track.url);
-            await interaction.reply({ content: `**${track.title}** ajouté à **${name}** (recherche : ${query})`, flags: MessageFlags.Ephemeral })
+            await interaction.reply({ 
+                content: `**${track.title}** ajouté à **${name}** (recherche : ${query})`, 
+                flags: MessageFlags.Ephemeral 
+            })
         }
 
         else if (sub === 'list') {
+            const errorEmbed = embedError('📀 Playlist — Liste', 'Vous n\'avez aucune playlist !');
             const playlists = db.prepare('SELECT name FROM playlists WHERE user_id = ?').all(userId);
-            if (!playlists.length) return interaction.reply({ content: 'Vous n\'avez aucune playlist !', flags: MessageFlags.Ephemeral });
+            if (!playlists.length) return interaction.reply({ embeds: [errorEmbed], flags: MessageFlags.Ephemeral });
             await interaction.reply({ content: `Vos playlists :\n${playlists.map(p => `- **${p.name}**`).join('\n')}`, flags: MessageFlags.Ephemeral });
         }
 
         else if (sub === 'show') {
             const name = interaction.options.getString('nom');
+            const errorEmbedI = embedError('📀 Playlist — Afficher', `Playlist **${name}** introuvable !`);
             const playlist = db.prepare('SELECT id FROM playlists WHERE guild_id = ? AND user_id = ? and name = ?').get(guildId, userId, name);
-            if (!playlist) return interaction.reply({ content: `Playlist **${name}** introuvable !`, flags: MessageFlags.Ephemeral });
+            if (!playlist) return interaction.reply({ embeds: [errorEmbedI], flags: MessageFlags.Ephemeral });
 
+            const errorEmbedV = embedError('📀 Playlist — Afficher', `Playlist **${name}** est vide !`);
             const tracks = db.prepare('SELECT title FROM playlist_tracks WHERE playlist_id = ?').all(playlist.id);
-            if (!tracks.length) return interaction.reply({ content: `Playlist **${name}** est vide !`, flags: MessageFlags.Ephemeral });
+            if (!tracks.length) return interaction.reply({ embeds: [errorEmbedV], flags: MessageFlags.Ephemeral });
 
             await interaction.reply({
                 content: `**${name}** — ${tracks.length} musique(s) :\n${tracks.map((t, i) => `${i + 1}. ${t.title}`).join('\n')}`,
@@ -127,9 +139,10 @@ module.exports = {
         
         else if (sub === 'delete') {
             const name = interaction.options.getString('nom');
+            const errorEmbed = embedError('📀 Playlist — Supression', `Playlist **${name}** introuvable !`)
             const playlist = db.prepare('SELECT id FROM playlists WHERE guild_id = ? AND user_id = ? AND name = ?').get(guildId, userId, name);
 
-            if (!playlist) return interaction.reply({ content: `Playlist **${name}** introuvable !`, flags: MessageFlags.Ephemeral });
+            if (!playlist) return interaction.reply({ embeds: [errorEmbed], flags: MessageFlags.Ephemeral });
             
             db.prepare('DELETE FROM playlists WHERE id = ?').run(playlist.id);
             await interaction.reply({ content: `Playlist **${name}** supprimée !`, flags: MessageFlags.Ephemeral });
@@ -138,15 +151,17 @@ module.exports = {
         else if (sub === 'play') {
             const name = interaction.options.getString('nom');
             const channel = interaction.member.voice.channel;
+            
 
             if (!channel) return interaction.reply({
-                content: 'Tu dois être dans un salon vocal !',
+                content: '❌ Tu dois être dans un salon vocal !',
                 flags: MessageFlags.Ephemeral
             });
 
+            const errorEmbedI = embedError('📀 Playlist — Jouer', `Playlist **${name}** introuvable !`)
             const playlist = db.prepare('SELECT id FROM playlists WHERE guild_id = ? AND user_id = ? AND name = ?').get(guildId, userId, name);
             if (!playlist) return interaction.reply({
-                content: `Playlist **${name}** introuvable !`,
+                embeds: [errorEmbedI],
                 flags: MessageFlags.Ephemeral
             });
 

@@ -5,6 +5,14 @@ const db = new Database(path.join(__dirname, '..', 'database.db'));
 
 // Création des tables au démarrage
 db.exec(`
+    CREATE TABLE IF NOT EXISTS guilds (
+        id TEXT PRIMARY KEY,
+        color INTEGER DEFAULT 5793266,
+        channel_logs TEXT
+    )
+`);
+
+db.exec(`
     CREATE TABLE IF NOT EXISTS track_cache (
     youtube_title TEXT PRIMARY KEY,
     artist TEXT,

@@ -3,21 +3,11 @@ const {
     EmbedBuilder,
     ChannelType
 } = require('discord.js');
-const db = require('../../database');
-const getChannel = require('../../utils/getChannel')
-const getColor = require('../../utils/getColor')
+const db = require('../database');
+const getChannel = require('../utils/getChannel')
+const getColor = require('../utils/getColor')
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('logs')
-        .setDescription("Choisir le salon de logs")
-        .addChannelOption(option => option
-            .setName('channel')
-            .setDescription("Salon où envoyé les logs du serveur")
-            .addChannelTypes(ChannelType.GuildText)
-            .setRequired(true)
-        ),
-
     async execute(interaction) {
         const channel = interaction.options.getChannel('channel');  
         const guildId = interaction.guild.id;

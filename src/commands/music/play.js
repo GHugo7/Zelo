@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { useMainPlayer } = require('discord-player');
+const embedError = require('../../utils/embedError')
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -14,10 +15,12 @@ module.exports = {
     async execute(interaction) {
         const player = useMainPlayer();
         const channel = interaction.member.voice.channel;
+        
     
         if (!channel) {
+            const errorEmbed = embedError('🎵 Musique' ,'Utilisateur introuvable dans le salon vocal !')
             return interaction.reply({
-                content: '❌ Utilisateur introuvable dans le salon vocal !',
+                embeds: [errorEmbed],
                 flags: MessageFlags.Ephemeral
             });
         }
@@ -44,7 +47,11 @@ module.exports = {
 
             return interaction.deleteReply();
         } catch (e) {
-            interaction.followUp(`❌ Aucun résultat trouvé pour **${query}** !`);
+            const errorEmbed = embedError('🎵 Musique', `Aucun résultat trouvé pour **${query}** !`)
+            interaction.followUp({
+                embeds: [errorEmbed],
+                flags: MessageFlags.Ephemeral
+            });
         }
     },
 
