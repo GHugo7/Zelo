@@ -1,6 +1,6 @@
 const { Player } = require('discord-player');
 const { DefaultExtractors } = require('@discord-player/extractor');
-
+const path = require('node:path');
 let player;
 
 async function createPlayer(client) {
@@ -8,7 +8,6 @@ async function createPlayer(client) {
         useLegacyFFmpeg: false,
     });
     await player.extractors.loadMulti(DefaultExtractors);
-
     return player;
 };
 

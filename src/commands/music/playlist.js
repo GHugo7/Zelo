@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { useMainPlayer } = require('discord-player');
 const db = require('../../database');
 const embedError = require('../../utils/embedError');
 
@@ -64,7 +65,23 @@ module.exports = {
                 .setRequired(true)
                 .setAutocomplete(true)
             )
+        )
+        .addSubcommand(sub => sub
+            .setName('import')
+            .setDescription('importer une playlist Spotify/YouTube')
+            .addStringOption(opt => opt
+                .setName('url')
+                .setDescription('URL de la playlist')
+                .setRequired(true)
+            )
+            .addStringOption(opt => opt
+                .setName('nom')
+                .setDescription('Nom de la playlist de destination')
+                .setRequired(true)
+                .setAutocomplete(true)
+            )
         ),
+
     async execute(interaction) {
         const sub = interaction.options.getSubcommand();
         const userId = interaction.user.id;
@@ -89,7 +106,6 @@ module.exports = {
             const playlist = db.prepare('SELECT id FROM playlists WHERE guild_id = ? AND user_id = ? AND name = ?').get(guildId, userId, name);
             if (!playlist) return interaction.reply({ embeds: [errorEmbedI], flags: MessageFlags.Ephemeral });
 
-            const { useMainPlayer } = require('discord-player');
             const player = useMainPlayer();
             const result = await player.search(query, { requestedBy: interaction.user });
 
@@ -173,8 +189,7 @@ module.exports = {
             });
 
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
-            const { useMainPlayer } = require('discord-player');
+            
             const player = useMainPlayer();
 
             for (const track of tracks) {
@@ -188,6 +203,32 @@ module.exports = {
 
             await interaction.editReply(`Playlist **${name}** lancée — ${tracks.length} musique(s)`);
         }
+        else if (sub === 'import') {
+            const url = interaction.options.getString('url');
+            const name = interaction.options.getString('nom');
+
+            const playlist = db.prepare('SELECT id FROM playlists WHERE guild_id = ? AND user_id = ? AND name = ?').get(guildId, userId, name);
+            if (!playlist) return interaction.reply({ embeds: [embedError('📀 Playlist — Import', `Playlist **${name} introuvable.`)], flags: MessageFlags.Ephemeral });
+
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+            const player = useMainPlayer();
+            const result = await player.search(url, { requestedBy: interaction.user });
+
+            if (!result.hasTracks()) return interaction.editReply('❌ Aucune musique trouvée !');
+
+            let added = 0;
+            let skipped = 0;
+
+            for (const track of result.tracks) {
+                const existing = db.prepare('SELECT id FROM playlist_tracks WHERE playlist_id = ? AND title = ?').get(playlist.id, track.title);
+                if (existing) { skipped++; continue; }
+                db.prepare('INSERT INTO playlist_tracks (playlist_id, title, url) VALUES (?, ?, ?)').run(playlist.id, track.title, track.url);
+                added++;
+            }
+
+            await interaction.editReply(`✅ Import terminé — **${added}** musique(s) ajoutée(s), **${skipped}** ignorée(s) (doublons)`);
+        }
     },
 
     async autocomplete(interaction) {
@@ -197,7 +238,6 @@ module.exports = {
         const userId = interaction.user.id;
 
         if (focusedOption.name === 'query') {
-            const { useMainPlayer } = require('discord-player');
             const player = useMainPlayer();
             try {
                 const results = await Promise.race([

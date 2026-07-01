@@ -9,7 +9,7 @@ player.events.on('playerStart', async (queue, track) => {
     const trackInfo = await getTrackInfo(track.title, track.author, track.url);
     queue.metadata.trackInfo = trackInfo;
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 0));
     const page = queue.metadata.currentPage || 0;
     const result = buildMusicEmbed(queue, page);
     if (!result) return;

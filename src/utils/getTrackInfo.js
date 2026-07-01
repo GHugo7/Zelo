@@ -1,5 +1,5 @@
 const Groq = require('groq-sdk');
-
+const db = require('../database')
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 module.exports = async function getTrackInfo(title, author, url) {
