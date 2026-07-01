@@ -14,7 +14,7 @@ db.exec(`
 
 db.exec(`
     CREATE TABLE IF NOT EXISTS track_cache (
-    youtube_title TEXT PRIMARY KEY,
+    url TEXT PRIMARY KEY,
     artist TEXT,
     title TEXT
     )

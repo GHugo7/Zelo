@@ -4,15 +4,17 @@ const {
     MessageFlags,
 } = require('discord.js');
 const db = require('../database');
+const embedError = require('../utils/embedError');
 
 module.exports = {
     async execute(interaction) {
         const input = interaction.options.getString('couleur');
         const hex = input.replace('#', '');
+        const errorEmbed = embedError('⚙️ Configuration — Couleur', 'Couleur invalide ! Format attendu : `#5865F2`')
 
         if (!/^[0-9A-Fa-f]{6}$/.test(hex)) {
             return interaction.reply({
-                content: '❌ Couleur invalide ! Format attendu : `#5865F2`',
+                embeds: [errorEmbed],
                 flags: MessageFlags.Ephemeral,
             });
         }

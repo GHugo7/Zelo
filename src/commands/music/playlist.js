@@ -72,7 +72,7 @@ module.exports = {
 
         if (sub === 'create') {
             const name = interaction.options.getString('nom');
-            const errorEmbed = embedError('📀 Playlist — Creation', `Une playlist **${name}** existe déjà !`);
+            const errorEmbed = embedError('📀 Playlist — Create', `Une playlist **${name}** existe déjà !`);
             try {
                 db.prepare('INSERT INTO playlists (guild_id, user_id, name) VALUES (?, ?, ?)').run(guildId, userId, name);
                 await interaction.reply({ content: `Playlist **${name}** créée !`, flags: MessageFlags.Ephemeral });
@@ -84,7 +84,7 @@ module.exports = {
         else if (sub === 'add') {
             const name = interaction.options.getString('playlist');
             const query = interaction.options.getString('query');
-            const errorEmbedI = embedError('📀 Playlist — Ajout', `Playlist **${name}** introuvable !`);
+            const errorEmbedI = embedError('📀 Playlist — Add', `Playlist **${name}** introuvable !`);
 
             const playlist = db.prepare('SELECT id FROM playlists WHERE guild_id = ? AND user_id = ? AND name = ?').get(guildId, userId, name);
             if (!playlist) return interaction.reply({ embeds: [errorEmbedI], flags: MessageFlags.Ephemeral });
@@ -93,12 +93,12 @@ module.exports = {
             const player = useMainPlayer();
             const result = await player.search(query, { requestedBy: interaction.user });
 
-            const errorEmbedQ = embedError('📀 Playlist — Ajout', `Aucun résultat pour **${query}** !`);
+            const errorEmbedQ = embedError('📀 Playlist — Add', `Aucun résultat pour **${query}** !`);
             if (!result.hasTracks()) return interaction.reply({ embeds: [errorEmbedQ], flags: MessageFlags.Ephemeral });
 
             const track = result.tracks[0];
             
-            const errorEmbedE = embedError('📀 Playlist — Ajout', `**${track.title}** est déjà dans la playlist **${name}** !`);
+            const errorEmbedE = embedError('📀 Playlist — Add', `**${track.title}** est déjà dans la playlist **${name}** !`);
             const existing = db.prepare('SELECT id FROM playlist_tracks WHERE playlist_id = ? AND title = ?').get(playlist.id, track.title);
             if (existing) {
                 return interaction.reply({
@@ -115,7 +115,7 @@ module.exports = {
         }
 
         else if (sub === 'list') {
-            const errorEmbed = embedError('📀 Playlist — Liste', 'Vous n\'avez aucune playlist !');
+            const errorEmbed = embedError('📀 Playlist — List', 'Vous n\'avez aucune playlist !');
             const playlists = db.prepare('SELECT name FROM playlists WHERE user_id = ?').all(userId);
             if (!playlists.length) return interaction.reply({ embeds: [errorEmbed], flags: MessageFlags.Ephemeral });
             await interaction.reply({ content: `Vos playlists :\n${playlists.map(p => `- **${p.name}**`).join('\n')}`, flags: MessageFlags.Ephemeral });
@@ -123,11 +123,11 @@ module.exports = {
 
         else if (sub === 'show') {
             const name = interaction.options.getString('nom');
-            const errorEmbedI = embedError('📀 Playlist — Afficher', `Playlist **${name}** introuvable !`);
+            const errorEmbedI = embedError('📀 Playlist — Show', `Playlist **${name}** introuvable !`);
             const playlist = db.prepare('SELECT id FROM playlists WHERE guild_id = ? AND user_id = ? and name = ?').get(guildId, userId, name);
             if (!playlist) return interaction.reply({ embeds: [errorEmbedI], flags: MessageFlags.Ephemeral });
 
-            const errorEmbedV = embedError('📀 Playlist — Afficher', `Playlist **${name}** est vide !`);
+            const errorEmbedV = embedError('📀 Playlist — Show', `Playlist **${name}** est vide !`);
             const tracks = db.prepare('SELECT title FROM playlist_tracks WHERE playlist_id = ?').all(playlist.id);
             if (!tracks.length) return interaction.reply({ embeds: [errorEmbedV], flags: MessageFlags.Ephemeral });
 
@@ -139,7 +139,7 @@ module.exports = {
         
         else if (sub === 'delete') {
             const name = interaction.options.getString('nom');
-            const errorEmbed = embedError('📀 Playlist — Supression', `Playlist **${name}** introuvable !`)
+            const errorEmbed = embedError('📀 Playlist — Delete', `Playlist **${name}** introuvable !`)
             const playlist = db.prepare('SELECT id FROM playlists WHERE guild_id = ? AND user_id = ? AND name = ?').get(guildId, userId, name);
 
             if (!playlist) return interaction.reply({ embeds: [errorEmbed], flags: MessageFlags.Ephemeral });
@@ -152,22 +152,23 @@ module.exports = {
             const name = interaction.options.getString('nom');
             const channel = interaction.member.voice.channel;
             
-
+            const errorEmbed = embedError('📀 Playlist — Play', 'Tu dois être dans un salon vocal !');
             if (!channel) return interaction.reply({
-                content: '❌ Tu dois être dans un salon vocal !',
+                embeds: [errorEmbed],
                 flags: MessageFlags.Ephemeral
             });
 
-            const errorEmbedI = embedError('📀 Playlist — Jouer', `Playlist **${name}** introuvable !`)
+            const errorEmbedI = embedError('📀 Playlist — Play', `Playlist **${name}** introuvable !`)
             const playlist = db.prepare('SELECT id FROM playlists WHERE guild_id = ? AND user_id = ? AND name = ?').get(guildId, userId, name);
             if (!playlist) return interaction.reply({
                 embeds: [errorEmbedI],
                 flags: MessageFlags.Ephemeral
             });
 
+            const errorEmbedV = embedError('📀 Playlist — Play', `La playlist **${name}** est vide !`);
             const tracks = db.prepare('SELECT title, url FROM playlist_tracks WHERE playlist_id = ?').all(playlist.id);
             if (!tracks.length) return interaction.reply({
-                content: `La playlist **${name}** est vide !`,
+                embeds: [errorEmbedV],
                 flags: MessageFlags.Ephemeral
             });
 

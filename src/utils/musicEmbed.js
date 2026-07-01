@@ -9,6 +9,9 @@ module.exports = function buildMusicEmbed(queue, page = 0) {
     const totalPages = Math.ceil(tracks.length / tracksPerPage) || 1;
     const pageTracks = tracks.slice(page * tracksPerPage, (page + 1) * tracksPerPage);
 
+    const artist = queue.metadata.trackInfo?.artist || currentTrack.author;
+    const title = queue.metadata.trackInfo?.title || currentTrack.title;
+
     // Barre de progression
     const duration = currentTrack.durationMS;
     const position = queue.node.getTimestamp();
@@ -17,7 +20,7 @@ module.exports = function buildMusicEmbed(queue, page = 0) {
 
     // Liste de la queue
     const queueList = pageTracks.length > 0
-        ? pageTracks.map((t, i) => `${page * tracksPerPage + i + 1}. **${t.title}** - **${t.author}**`).join('\n')
+        ? pageTracks.map((t, i) => `${page * tracksPerPage + i + 1}. [**${t.title}**](${t.url}) - **${t.author}**`).join('\n')
         : 'Aucune musique dans la queue';
 
     const playlistField = queue.metadata.playlistName
@@ -29,8 +32,8 @@ module.exports = function buildMusicEmbed(queue, page = 0) {
         .setTitle('🎵 Lu` Music Player')
         .setThumbnail(currentTrack.thumbnail || null)
         .addFields(
-            { name: '🎶 En cours', value: `**${currentTrack.title}**`, inline: false },
-            { name: '👤 Artiste', value: currentTrack.author, inline: true },
+            { name: '🎶 En cours', value: `**${title}**`, inline: false },
+            { name: '👤 Artiste', value: artist, inline: true },
             { name: '⏱️ Durée', value: position?.current?.label && position?.total?.label ? `${position.current.label} / ${position.total.label}` : '0:00 / 0:00', inline: true },
             { name: '➕ Ajouté par', value: `${currentTrack.requestedBy}`, inline: true },
             ...playlistField,

@@ -1,5 +1,6 @@
 const { Events, MessageFlags } = require('discord.js');
 const { useQueue, useHistory } = require('discord-player');
+const embedError = require('../utils/embedError');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -11,8 +12,9 @@ module.exports = {
         const queue = useQueue(interaction.guild.id);
 
         if (!queue) {
+            const errorEmbed = embedError('🎵 Musique', 'Aucune musique en cours !');
             return interaction.reply({
-                content: '❌ Aucune musique en cours !',
+                embeds: [errorEmbed],
                 flags: MessageFlags.Ephemeral
             });
         }
@@ -27,7 +29,7 @@ module.exports = {
                 await interaction.deferUpdate();
                 break;
             case 'music_stop':
-                await queue.metadata.playerMessage.delete();
+                if (queue.metadata.playerMessage) await queue.metadata.playerMessage.delete().catch(() => {});
                 queue.delete();
                 await interaction.deferUpdate();
                 break;
@@ -41,8 +43,9 @@ module.exports = {
                     await history.previous();
                     await interaction.deferUpdate();
                 } catch {
+                    const errorEmbed = embedError('🎵 Musique', 'Aucune musique en cours !');
                     await interaction.reply({
-                        content: '❌ Aucune musique en cours !',
+                        embeds: [errorEmbed],
                         flags: MessageFlags.Ephemeral
                     });
                 }
