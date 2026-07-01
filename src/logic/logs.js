@@ -11,7 +11,7 @@ module.exports = {
     async execute(interaction) {
         const channel = interaction.options.getChannel('channel');  
         const guildId = interaction.guild.id;
-        const guildDB = db.prepare(`SELECT channel_logs FROM guilds WHERE id = ?`).get(guildId);
+        const guildDB = db.prepare(`SELECT channel_logs FROM config WHERE id = ?`).get(guildId);
 
         if (guildDB && guildDB.channel_logs === channel.id) {
             const embed = new EmbedBuilder()
@@ -34,7 +34,7 @@ module.exports = {
         }
 
         db.prepare(`
-            INSERT INTO guilds (id, channel_logs) VALUES (?, ?)
+            INSERT INTO config (id, channel_logs) VALUES (?, ?)
             ON CONFLICT(id) DO UPDATE SET channel_logs = ?
         `).run(guildId, channel.id, channel.id)
 

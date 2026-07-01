@@ -4,6 +4,7 @@ const {
     ActivityType,
 } = require('discord.js');
 const { createPlayer } = require('../player');
+const db = require('../database');
 
 module.exports = {
     name: Events.ClientReady,
@@ -54,5 +55,9 @@ module.exports = {
             i = (i + 1) % statuts.length;
             bot.user.setActivity(statuts[i]);
         }, 10000);
+
+        bot.guilds.cache.forEach(guild => {
+            db.prepare('INSERT OR IGNORE INTO guilds (id) VALUES (?)').run(guild.id);
+        });
     }
 }

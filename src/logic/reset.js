@@ -6,7 +6,7 @@ const embedError = require('../utils/embedError')
 module.exports = {
     async execute(interaction) {
         const guildId = interaction.guild.id;
-        const guildDB = db.prepare(`SELECT id FROM guilds WHERE id = ?`).get(guildId);
+        const guildDB = db.prepare(`SELECT id FROM config WHERE id = ?`).get(guildId);
 
         const embed = new EmbedBuilder()
             .setColor(getColor(guildId)) // ROUGE ~
@@ -14,7 +14,7 @@ module.exports = {
             .setTimestamp(); 
 
         if (guildDB) {
-            db.prepare(`DELETE FROM guilds WHERE id = ?`).run(guildId);
+            db.prepare(`DELETE FROM config WHERE id = ?`).run(guildId);
             embed.setDescription('La configuration de ce serveur a été supprimée !')
         } 
         else if (!guildDB) {

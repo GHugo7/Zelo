@@ -31,7 +31,7 @@ module.exports = {
             .setTimestamp()
 
         db.prepare(`
-            INSERT INTO guilds (id, color) VALUES (?, ?)
+            INSERT INTO config (id, color) VALUES (?, ?)
             ON CONFLICT(id) DO UPDATE SET COLOR = ?
         `).run(guildId, color, color);
 

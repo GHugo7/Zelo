@@ -1,9 +1,11 @@
 const db = require('../database');
 
 module.exports = function getChannel(guildId, type) {
-    let data =  db.prepare(`
-        SELECT * FROM guilds WHERE id = ?
-    `).get(guildId)
+    const data =  db.prepare(`
+        SELECT * FROM config WHERE id = ?
+    `).get(guildId);
+
+    if (!data) return null;
 
     switch (type) {
         case "logs":
