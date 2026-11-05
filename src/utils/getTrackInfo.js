@@ -1,3 +1,7 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, '../prompts/trackInfo.txt'), 'utf-8');
+
 const Groq = require('groq-sdk');
 const db = require('../database')
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -15,7 +19,7 @@ module.exports = async function getTrackInfo(title, author, url) {
             messages: [
                 {
                     role: 'system',
-                    content: 'Tu es un expert en musique. Retourne UNIQUEMENT un JSON avec "artist" et "title". RÈGLES STRICTES : 1) Ne modifie JAMAIS le titre si tu n\'es pas sûr à 100%. 2) Si le titre contient déjà "Artiste - Titre", extrais-les directement sans modification. 3) Retourne null si tu doutes. Juste le JSON, pas d\'explication.'
+                    content: SYSTEM_PROMPT
                 },
                 {
                     role: 'user',
