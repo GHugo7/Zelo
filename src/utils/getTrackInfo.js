@@ -1,45 +1,48 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, '../prompts/trackInfo.txt'), 'utf-8');
+const DEBUG = require('./debug');
 
-const Groq = require('groq-sdk');
+const Anthropic = require('@anthropic-ai/sdk')
 const db = require('../database')
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 module.exports = async function getTrackInfo(title, author, url) {
     // Verification du cache BDD
     if (url) {
         const cached = db.prepare('SELECT artist, title FROM track_cache WHERE url = ?').get(url);
         if (cached) return { artist: cached.artist, title: cached.title };
+        DEBUG('[trackInfo] entrée :', { title, author, url });
+        DEBUG('[trackInfo] cache :', cached);
     }
 
     try {
-        const response = await groq.chat.completions.create({
-            model: 'llama-3.1-8b-instant',
-            messages: [
-                {
-                    role: 'system',
-                    content: SYSTEM_PROMPT
-                },
-                {
-                    role: 'user',
-                    content: `Titre : "${title}"\nChaîne/Auteur : "${author}"\nRetourne JSON avec "artist", "title" et "confidence" (0 à 1). Si confidence < 0.8, mets les valeurs originales.`
-                }
-            ],
-            max_tokens: 100,
-            temperature: 0.0,
+        const cleanAuthor = (author ?? '').replace(/[\u115F\u1160\u17B4\u17B5\u180E\u200B-\u200F\u2060-\u206F\u3164\uFEFF\u1CBC]/g, '').trim();
+        const response = await anthropic.messages.create({
+            model: 'claude-haiku-5-5',
+            max_tokens: 150,
+            thinking: { type: 'disabled' },
+            output_config: { effort: 'low' },
+            system: SYSTEM_PROMPT,
+            messages: [{ role: 'user', content: `Titre : "${title}"\nChaîne/Auteur : "${cleanAuthor}"` }],
         });
 
-        const content = response.choices[0]?.message?.content?.trim();
+        DEBUG('[trackInfo] réponse brute :', response.content[0]?.text);
+
+        const content = response.content[0]?.text?.trim();
         const json = JSON.parse(content);
 
-        if (json.confidence && json.confidence < 0.8) return null;
+        if (Number(json.confidence ?? 0) < 0.8) return null;
 
         if (json.artist && json.title) {
+            if (url) {
+                db.prepare('INSERT OR REPLACE INTO track_cache (url, artist, title) VALUES (?, ?, ?)').run(url, json.artist, json.title);
+            }
             return { artist: json.artist, title: json.title };
         }
         return null;
-    } catch {
+    } catch (e) {
+        console.error('[trackInfo] erreur :', e.status ?? '', e.message);
         return null;
     }
 };
