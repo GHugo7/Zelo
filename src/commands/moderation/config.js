@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, MessageFlags ,ChannelType } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags ,ChannelType, PermissionFlagsBits } = require('discord.js');
 const db = require('../../database');
 
 const resetLogic = require('../../logic/reset');
@@ -9,6 +9,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('config')
         .setDescription('Configurer Lu`')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .addSubcommand(sub => sub
             .setName('color')
             .setDescription('Définir la couleur du bot')
