@@ -144,12 +144,12 @@ module.exports = {
             if (!playlist) return interaction.reply({ embeds: [errorEmbedI], flags: MessageFlags.Ephemeral });
 
             const errorEmbedV = embedError('📀 Playlist — Show', `Playlist **${name}** est vide !`);
-            const tracks = db.prepare('SELECT title FROM playlist_tracks WHERE playlist_id = ?').all(playlist.id);
+            const tracks = db.prepare('SELECT title, url FROM playlist_tracks WHERE playlist_id = ?').all(playlist.id);
             if (!tracks.length) return interaction.reply({ embeds: [errorEmbedV], flags: MessageFlags.Ephemeral });
 
             await interaction.reply({
-                content: `**${name}** — ${tracks.length} musique(s) :\n${tracks.map((t, i) => `${i + 1}. ${t.title}`).join('\n')}`,
-                flags: MessageFlags.Ephemeral
+                content: `**${name}** — ${tracks.length} musique(s) :\n${tracks.map((t, i) => `${i + 1}. [${t.title}](${t.url})`).join('\n')}`,
+                flags: [MessageFlags.Ephemeral, MessageFlags.SuppressEmbeds ]
             });
         }
         
