@@ -37,8 +37,12 @@ module.exports = {
             }
         })
 
-        await createPlayer(bot);
-        require('../playerEvents')
+        try {
+            await createPlayer(bot);
+            require('../playerEvents');
+        } catch (error) {
+            console.error('[ready] lecteur musique indisponible :', error);
+        }
         const statuts = [
             { name: 'la Community Lu\'', type: ActivityType.Watching },
             { name: '/help pour commencer', type: ActivityType.Playing },
