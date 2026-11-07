@@ -38,9 +38,12 @@ module.exports = function buildMusicEmbed(queue, page = 0) {
             { name: '➕ Ajouté par', value: `${currentTrack.requestedBy}`, inline: true },
             ...playlistField,
             { name: `▶️ ${bar}`, value: '\u200b', inline: false },
-            { name: `📋 File d'attente — page ${page + 1}/${totalPages}`, value: queueList, inline: false },
-        )
+        );
+
+    const embedFile = new EmbedBuilder()
+        .setColor(getColor(queue.guild.id))
+        .setDescription(`**📋 File d'attente — page ${page + 1}/${totalPages}**\n${queueList}`)
         .setTimestamp();
     
-    return { embed, totalPages }
+    return { embed, embedFile, totalPages }
 };

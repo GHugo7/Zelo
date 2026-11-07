@@ -13,19 +13,19 @@ player.events.on('playerStart', async (queue, track) => {
     const page = queue.metadata.currentPage || 0;
     const result = buildMusicEmbed(queue, page);
     if (!result) return;
-    const { embed, totalPages } = result;
+    const { embed, embedFile, totalPages } = result;
     const buttons = buildMusicButtons(page, totalPages, false, queue.repeatMode);
 
     if (queue.metadata.playerMessage) {
         // Message deja existant - edit
         await queue.metadata.playerMessage.edit({
-            embeds: [embed],
+            embeds: [embed, embedFile],
             components: buttons,
         }).catch(() => {});
     } else {
         // Initialisation - creation du message
         const message = await queue.metadata.channel.send({
-            embeds: [embed],
+            embeds: [embed, embedFile],
             components: buttons,
         });
         queue.metadata.playerMessage = message;
@@ -44,10 +44,10 @@ player.events.on('playerStart', async (queue, track) => {
         const page = queue.metadata.currentPage || 0;
         const result = buildMusicEmbed(queue, page);
         if (!result) return;
-        const { embed: updatedEmbed, totalPages: updatedPages } = result;
+        const { embed: updatedEmbed, embedFile: updatedEmbedFile, totalPages: updatedPages } = result;
         const updatedButtons = buildMusicButtons(page, updatedPages, queue.node.isPaused(), queue.repeatMode);
         await queue.metadata.playerMessage.edit({
-            embeds: [updatedEmbed],
+            embeds: [updatedEmbed, updatedEmbedFile],
             components: updatedButtons,
         }).catch(() => clearInterval(interval));
     }, 1000);
