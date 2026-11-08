@@ -1,6 +1,5 @@
 const {
     Events,
-    ChannelType,
     ActivityType,
 } = require('discord.js');
 const { createPlayer } = require('../player');
@@ -10,32 +9,7 @@ module.exports = {
     name: Events.ClientReady,
     once: true,
     async execute(bot) {
-        const channels = bot.channels.cache.filter(channel => channel.type !== ChannelType.GuildCategory);
-        const category = bot.channels.cache.filter(category => category.type == ChannelType.GuildCategory);
         console.log(`${bot.user.username} est connecté ! ✅ ❤️`);
-        console.log(`Channels : ${channels.size}`);
-        console.log(`Categories : ${category.size}`);
-
-        bot.channels.cache.forEach(channel => {
-            let channelTypeName;
-            if (channel.type !== ChannelType.GuildCategory) {
-                switch (channel.type) {
-                    case ChannelType.GuildText:
-                        channelTypeName = 'Textuel'
-                        break;
-                    case ChannelType.GuildVoice:
-                        channelTypeName = 'Vocal'
-                        break;
-                    case ChannelType.GuildCategory:
-                        channelTypeName = 'Categories'
-                        break;
-                    default:
-                        channelTypeName = `Inconnu (${channel.type})`
-                        break;
-                    }
-                console.log(`- ${channel.name} - type : ${channelTypeName}`)
-            }
-        })
 
         try {
             await createPlayer(bot);
