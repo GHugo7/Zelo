@@ -6,8 +6,11 @@ const getTrackInfo = require('./utils/getTrackInfo');
 const player = getPlayer();
 
 player.events.on('playerStart', async (queue, track) => {
-    const trackInfo = await getTrackInfo(track.title, track.author, track.url);
-    queue.metadata.trackInfo = trackInfo;
+    queue.metadata.trackInfo = null;
+    getTrackInfo(track.title, track.author, track.url)
+        .then(info => {
+            if (queue.currentTrack?.id === track.id) queue.metadata.trackInfo = info;
+        }).catch(error => console.error('[trackInfo] ', error));
 
     await new Promise(resolve => setTimeout(resolve, 0));
     const page = queue.metadata.currentPage || 0;
