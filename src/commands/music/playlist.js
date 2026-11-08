@@ -68,7 +68,7 @@ module.exports = {
         )
         .addSubcommand(sub => sub
             .setName('import')
-            .setDescription('importer une playlist Spotify/YouTube')
+            .setDescription('importer une playlist Spotify')
             .addStringOption(opt => opt
                 .setName('url')
                 .setDescription('URL de la playlist')
@@ -208,7 +208,7 @@ module.exports = {
             const name = interaction.options.getString('nom');
 
             const playlist = db.prepare('SELECT id FROM playlists WHERE guild_id = ? AND user_id = ? AND name = ?').get(guildId, userId, name);
-            if (!playlist) return interaction.reply({ embeds: [embedError('📀 Playlist — Import', `Playlist **${name} introuvable.`)], flags: MessageFlags.Ephemeral });
+            if (!playlist) return interaction.reply({ embeds: [embedError('📀 Playlist — Import', `Playlist **${name}** introuvable.`)], flags: MessageFlags.Ephemeral });
 
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 

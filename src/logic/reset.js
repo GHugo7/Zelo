@@ -18,7 +18,7 @@ module.exports = {
             embed.setDescription('La configuration de ce serveur a été supprimée !')
         } 
         else if (!guildDB) {
-            const errorEmbed = embedError('⚙️ Réinitialisation — BDD' ,'Aucune configuration n\'a pas été trouvée pour ce serveur.')
+            const errorEmbed = embedError('⚙️ Réinitialisation — BDD' ,'Aucune configuration n\'a été trouvée pour ce serveur.')
             
             return interaction.reply({
                 embeds: [errorEmbed],
