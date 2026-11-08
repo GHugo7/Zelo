@@ -18,7 +18,7 @@ module.exports = {
             console.error('[ready] lecteur musique indisponible :', error);
         }
         const statuts = [
-            { name: 'la Community Lu\'', type: ActivityType.Watching },
+            { name: 'Zelo - Mister', type: ActivityType.Watching },
             { name: '/help pour commencer', type: ActivityType.Playing },
             { name: 'de la bonne musique', type: ActivityType.Listening },
             { name: 'vos messages', type: ActivityType.Watching },
