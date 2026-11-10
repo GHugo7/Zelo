@@ -38,12 +38,21 @@ module.exports = {
                 await interaction.deferUpdate();
                 break;
             case 'music_previous':
+                const history = useHistory(interaction.guild.id)
+                if (!history.previousTrack) {
+                    const errorEmbed = embedError('🎵 Musique', 'Aucun morceau précédent !');
+                    await interaction.reply({
+                        embeds: [errorEmbed],
+                        flags: MessageFlags.Ephemeral
+                    });
+                    return;
+                }
                 try {
-                    const history = useHistory(interaction.guild.id)
                     await history.previous();
                     await interaction.deferUpdate();
-                } catch {
-                    const errorEmbed = embedError('🎵 Musique', 'Aucune musique en cours !');
+                } catch (error) {
+                    console.error('[music_previous]', error);
+                    const errorEmbed = embedError('🎵 Musique', 'Impossible de revenir en arrière !');
                     await interaction.reply({
                         embeds: [errorEmbed],
                         flags: MessageFlags.Ephemeral
