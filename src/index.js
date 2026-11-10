@@ -5,7 +5,6 @@ const {
     GatewayIntentBits,
 } = require('discord.js');
 require('dotenv').config();
-const db = require('./database');
 const fs = require('node:fs');
 const path = require('node:path');
 const bot = new Client({
