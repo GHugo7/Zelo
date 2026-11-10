@@ -1,6 +1,7 @@
 const {
     Client,
     Collection,
+    Events,
     GatewayIntentBits,
 } = require('discord.js');
 require('dotenv').config();
@@ -52,5 +53,7 @@ for (const file of eventFiles) {
 process.on('unhandledRejection', (error) => {
     console.error('Unhandled rejection:', error);
 });
+
+bot.on(Events.Error, (error) => console.error('[client]', error));
 
 bot.login(process.env.TOKEN);
