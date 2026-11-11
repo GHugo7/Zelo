@@ -1,11 +1,16 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, '../prompts/trackInfo.txt'), 'utf-8');
 const DEBUG = require('./debug');
-
+let SYSTEM_PROMPT = null;
 const Anthropic = require('@anthropic-ai/sdk')
 const db = require('../database')
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+try {
+    SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, '../prompts/trackInfoPrompt.txt'), 'utf8');
+} catch (error) {
+    console.error('[trackInfo] prompt introuvable, métadonnées IA désactivées : ', error.message);
+}
 
 module.exports = async function getTrackInfo(title, author, url) {
     // Verification du cache BDD
@@ -15,6 +20,8 @@ module.exports = async function getTrackInfo(title, author, url) {
         DEBUG('[trackInfo] cache :', cached);
         if (cached) return { artist: cached.artist, title: cached.title };
     }
+    
+    if (!SYSTEM_PROMPT) return null;
 
     try {
         const cleanAuthor = (author ?? '').replace(/[\u115F\u1160\u17B4\u17B5\u180E\u200B-\u200F\u2060-\u206F\u3164\uFEFF\u1CBC]/g, '').trim();
