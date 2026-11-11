@@ -11,9 +11,9 @@ module.exports = async function getTrackInfo(title, author, url) {
     // Verification du cache BDD
     if (url) {
         const cached = db.prepare('SELECT artist, title FROM track_cache WHERE url = ?').get(url);
-        if (cached) return { artist: cached.artist, title: cached.title };
         DEBUG('[trackInfo] entrée :', { title, author, url });
         DEBUG('[trackInfo] cache :', cached);
+        if (cached) return { artist: cached.artist, title: cached.title };
     }
 
     try {
